@@ -5,17 +5,29 @@ from discord.ext import commands
 from discord import app_commands
 from discord.ui import View, Modal, TextInput, Select, Button
 from dotenv import load_dotenv
+from flask import Flask
+from threading import Thread
 
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 CANAL_JUSTIFICATIVAS_ID = os.getenv("CANAL_JUSTIFICATIVAS_ID")
 
+# --- WEB SERVER PRO RENDER ---
+app = Flask('')
+@app.route('/')
+def home():
+    return "Bot de Prisoes Online!"
+def run():
+    app.run(host='0.0.0.0', port=10000)
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-
 
 # ==========================================
 # ARTIGOS DA POLÍCIA
@@ -184,7 +196,6 @@ ARTIGOS = {
     }
 }
 
-
 # ==========================================
 # FORMULÁRIO DA PRISÃO
 # ==========================================
@@ -234,7 +245,6 @@ class FormularioPrisao(Modal, title="Registro de Prisão"):
             ephemeral=True
         )
 
-
 # ==========================================
 # MENU DE ARTIGOS COM PAGINAÇÃO
 # ==========================================
@@ -277,7 +287,6 @@ class MenuArtigos(Select):
             content=self.view_principal.mensagem_selecao(),
             view=self.view_principal
         )
-
 
 class SelecaoArtigos(View):
 
@@ -378,7 +387,6 @@ class SelecaoArtigos(View):
             self.selecionados,
             interaction.user
         )
-
 
 # ==========================================
 # PUBLICAÇÃO DO REGISTRO
@@ -499,7 +507,6 @@ async def publicar_prisao(bot, canal_original, dados, selecionados, usuario):
         "✅ **Registro de prisão publicado com sucesso!**"
     )
 
-
 # ==========================================
 # PAINEL FIXO
 # ==========================================
@@ -521,7 +528,6 @@ class PainelPrisoes(View):
         button: Button
     ):
         await interaction.response.send_modal(FormularioPrisao())
-
 
 # ==========================================
 # COMANDO PARA CRIAR O PAINEL
@@ -551,7 +557,6 @@ async def painel(interaction: discord.Interaction):
         view=PainelPrisoes()
     )
 
-
 # ==========================================
 # INICIALIZAÇÃO
 # ==========================================
@@ -561,14 +566,12 @@ async def setup_hook():
     bot.add_view(PainelPrisoes())
     await bot.tree.sync()
 
-
 @bot.event
 async def on_ready():
     print(f"Bot conectado como {bot.user}")
-from web import manter_site
-manter_site()
 
 if not TOKEN:
     raise RuntimeError("DISCORD_TOKEN não foi encontrado no arquivo .env")
 
+keep_alive()
 bot.run(TOKEN)
