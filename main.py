@@ -11,7 +11,9 @@ from threading import Thread
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-CANAL_JUSTIFICATIVAS_ID = os.getenv("CANAL_JUSTIFICATIVAS_ID")
+# CORRIGIDO: AGORA ACEITA OS NOMES QUE VOCE USOU NO RENDER
+CANAL_PAINEL_ID = os.getenv("CANAL_PAINEL") or os.getenv("CANAL_PAINEL_ID")
+CANAL_REGISTRO_ID = os.getenv("CANAL_REGISTROS") or os.getenv("CANAL_REGISTRO_ID") or os.getenv("CANAL_JUSTIFICATIVAS_ID")
 
 # --- WEB SERVER PRO RENDER ---
 app = Flask('')
@@ -27,6 +29,7 @@ def keep_alive():
 
 intents = discord.Intents.default()
 intents.message_content = True
+intents.guilds = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
@@ -390,7 +393,7 @@ class SelecaoArtigos(View):
         )
 
 # ==========================================
-# PUBLICAÇÃO DO REGISTRO
+# PUBLICAÇÃO DO REGISTRO - CORRIGIDO
 # ==========================================
 
 async def publicar_prisao(bot, canal_original, dados, selecionados, usuario):
@@ -422,9 +425,11 @@ async def publicar_prisao(bot, canal_original, dados, selecionados, usuario):
 
     canal_destino = canal_original
 
-    if CANAL_JUSTIFICATIVAS_ID:
+    if CANAL_REGISTRO_ID:
         try:
-            canal_destino = bot.get_channel(int(CANAL_JUSTIFICATIVAS_ID))
+            canal_encontrado = bot.get_channel(int(CANAL_REGISTRO_ID))
+            if canal_encontrado:
+                canal_destino = canal_encontrado
         except ValueError:
             canal_destino = canal_original
 
@@ -569,7 +574,7 @@ async def setup_hook():
 
 @bot.event
 async def on_ready():
-    print(f"Bot conectado como {bot.user}")
+    print(f"Bot conectado como {bot.user} | Painel: {CANAL_PAINEL_ID} | Registro: {CANAL_REGISTRO_ID}")
 
 if not TOKEN:
     raise RuntimeError("DISCORD_TOKEN não foi encontrado no arquivo .env")
