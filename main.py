@@ -565,7 +565,8 @@ async def setup_hook():
 @bot.event
 async def on_ready():
     print(f"Bot conectado como {bot.user}")
-
+from web import manter_site
+manter_site()
 
 if not TOKEN:
     raise RuntimeError("DISCORD_TOKEN não foi encontrado no arquivo .env")
