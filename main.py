@@ -564,7 +564,7 @@ async def painel(interaction: discord.Interaction):
     except Exception as e:
         print(f"ERRO PAINEL: {e}")
         await interaction.followup.send(f"❌ Erro: {e}", ephemeral=True)
-        )
+        
         # Aqui usa sua View que já existe no código
         view = PainelView() # se o nome for diferente, me fala
         await interaction.channel.send(embed=embed, view=view)
