@@ -535,60 +535,43 @@ class PainelPrisoes(View):
     ):
         await interaction.response.send_modal(FormularioPrisao())
 
-# ==========================================
-# COMANDO PARA CRIAR O PAINEL
-# ==========================================
-
+# ===== PAINEL PRISÕES - BLOCO COMPLETO =====
 CANAL_PAINEL_ID = 1567332334661931158
 
-@bot.tree.command(
-    name="painel",
-    description="Publica o painel de registro de prisões"
-)
+class FormularioPrisao(discord.ui.Modal, title="Registro de Prisão"):
+    nome = discord.ui.TextInput(label="Nome do Preso", placeholder="Ex: João Silva")
+    id_preso = discord.ui.TextInput(label="ID do Preso", placeholder="Ex: 12345")
+    motivo = discord.ui.TextInput(label="Motivo / Artigos", style=discord.TextStyle.paragraph, placeholder="Ex: Art. 157 - Roubo")
+
+    async def on_submit(self, interaction: discord.Interaction):
+        # aqui manda pro seu canal de registro
+        await interaction.response.send_message(f"✅ Prisão registrada: {self.nome} | ID: {self.id_preso}", ephemeral=True)
+
+class PainelView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Registrar Prisão", style=discord.ButtonStyle.success, emoji="📋")
+    async def registrar(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(FormularioPrisao())
+
+@bot.tree.command(name="painel", description="Publica o painel de registro de prisões")
 async def painel(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
-
+    
     if interaction.channel.id != CANAL_PAINEL_ID:
-        await interaction.followup.send(f"❌ Comando só funciona em <#{CANAL_PAINEL_ID}>", ephemeral=True)
+        await interaction.followup.send(f"❌ Use esse comando só em <#{CANAL_PAINEL_ID}>", ephemeral=True)
         return
-
-    try:
-        embed = discord.Embed(
-            title="📋 PAINEL DE PRISÃO",
-            description="Clique no botão abaixo para registrar uma prisão.",
-            color=0x2B2D31
-        )
-        view = PainelView()
-        await interaction.channel.send(embed=embed, view=view)
-        await interaction.followup.send("✅ Painel publicado!", ephemeral=True)
-    except Exception as e:
-        print(f"ERRO PAINEL: {e}")
-        await interaction.followup.send(f"❌ Erro: {e}", ephemeral=True)
-        
-        # Aqui usa sua View que já existe no código
-        view = PainelView() # se o nome for diferente, me fala
-        await interaction.channel.send(embed=embed, view=view)
-        await interaction.followup.send("✅ Painel publicado com sucesso!", ephemeral=True)
-    except Exception as e:
-        print(f"ERRO PAINEL: {e}")
-        await interaction.followup.send(f"❌ Erro: {e}", ephemeral=True)
-
+    
     embed = discord.Embed(
-        title="🚔 CENTRAL DE REGISTRO DE PRISÕES",
-        description=(
-            "Utilize o botão abaixo para registrar uma prisão.\n\n"
-            "📋 Preencha os dados da ocorrência.\n"
-            "⚖️ Selecione os artigos aplicados.\n"
-            "📸 Envie a foto da prisão, se desejar.\n\n"
-            "O registro será publicado automaticamente."
-        ),
-        color=discord.Color.dark_blue()
+        title="📋 PAINEL DE PRISÃO", 
+        description="Clique no botão abaixo para registrar uma prisão.", 
+        color=0x2B2D31
     )
-
-    await interaction.response.send_message(
-        embed=embed,
-        view=PainelPrisoes()
-    )
+    view = PainelView()
+    await interaction.channel.send(embed=embed, view=view)
+    await interaction.followup.send("✅ Painel publicado!", ephemeral=True)
+# ===== FIM DO BLOCO =====
 
 # ==========================================
 # INICIALIZAÇÃO
