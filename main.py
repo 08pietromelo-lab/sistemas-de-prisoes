@@ -539,17 +539,31 @@ class PainelPrisoes(View):
 # COMANDO PARA CRIAR O PAINEL
 # ==========================================
 
+CANAL_PAINEL_ID = 1567332334661931158
+
 @bot.tree.command(
     name="painel",
     description="Publica o painel de registro de prisões"
 )
 async def painel(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
+
+    if interaction.channel.id != CANAL_PAINEL_ID:
+        await interaction.followup.send(f"❌ Comando só funciona em <#{CANAL_PAINEL_ID}>", ephemeral=True)
+        return
+
     try:
         embed = discord.Embed(
             title="📋 PAINEL DE PRISÃO",
             description="Clique no botão abaixo para registrar uma prisão.",
             color=0x2B2D31
+        )
+        view = PainelView()
+        await interaction.channel.send(embed=embed, view=view)
+        await interaction.followup.send("✅ Painel publicado!", ephemeral=True)
+    except Exception as e:
+        print(f"ERRO PAINEL: {e}")
+        await interaction.followup.send(f"❌ Erro: {e}", ephemeral=True)
         )
         # Aqui usa sua View que já existe no código
         view = PainelView() # se o nome for diferente, me fala
